@@ -9,4 +9,8 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+  @Get('spotly')
+  getWelcome(): string {
+    return this.appService.getSpotlyWelcome();
+  }
 }
