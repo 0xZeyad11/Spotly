@@ -12,7 +12,7 @@ CREATE TABLE "User" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "password_reset_token" TEXT NOT NULL,
-    "password_reset_expiry" TIMESTAMP(3) NOT NULL,
+    "password_token_expiry" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );

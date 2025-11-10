@@ -9,3 +9,5 @@ import { DatabaseModule } from '../database/database.module';
   providers: [UsersService],
 })
 export class UsersModule {}
+
+console.log('test');
