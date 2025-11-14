@@ -26,8 +26,9 @@ services:
       - /usr/src/app/node_modules
     ports:
       - "3000:3000"
+      - "5555:5555"
     command: >
-      sh -c "npx prisma generate && npm run start:dev"
+      sh -c "npm install && npx prisma generate  && npm run start:dev"
 
 volumes:
   postgres_data:
