@@ -15,16 +15,16 @@ datasource db {
 }
 
 model User {
-  id                    Int      @id @default(autoincrement())
-  user_name             String
-  email                 String   @unique
+  id                    Int       @id @default(autoincrement())
+  user_name             String    @unique
+  email                 String    @unique
   password              String
-  profile_image         String
+  profile_image         String?
   user_type             role
-  created_at            DateTime @default(now())
-  updated_at            DateTime @updatedAt
-  password_reset_token  String
-  password_token_expiry DateTime
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  password_reset_token  String?
+  password_token_expiry DateTime?
 }
 
 enum role {
