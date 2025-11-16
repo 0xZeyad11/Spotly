@@ -1,7 +1,16 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  UseGuards,
+  Request,
+  Body,
+  Controller,
+  Post,
+  Get,
+} from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { AuthService } from '../services/auth.service';
 import { LoginUserDto } from 'src/users/dto/update-user.dto';
+import { JwtGuard } from '../guards/auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -21,5 +30,10 @@ export class AuthController {
       );
     }
     return await this.authService.login(email, password);
+  }
+  @UseGuards(JwtGuard)
+  @Get('me')
+  getMe(@Request() req) {
+    return req.user;
   }
 }

@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { CreateUserDto } from './../../users/dto/create-user.dto';
 import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { User } from '@prisma/client';
@@ -17,7 +17,6 @@ export class AuthService {
   private salt: number;
   constructor(
     private readonly userService: UsersService,
-    private readonly prisma: DatabaseService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
   ) {
@@ -31,8 +30,6 @@ export class AuthService {
     if (!newuser) {
       throw new BadRequestException(`Some data are missing`);
     }
-
-    console.log('Current salt value: ', this.salt);
 
     const userByEmail = await this.userService.findByEmail(newuser.email);
     if (userByEmail) {
@@ -53,6 +50,7 @@ export class AuthService {
   }
 
   async hashPassword(password: string): Promise<string> {
+    console.log(password, this.salt);
     return await bcrypt.hash(password, this.salt ?? 10);
   }
 
@@ -63,7 +61,11 @@ export class AuthService {
       );
     }
 
-    return await this.jwtService.signAsync({ sub: user.id, email: user.email });
+    return await this.jwtService.signAsync({
+      sub: user.id,
+      email: user.email,
+      user_name: user.user_name,
+    });
   }
 
   async login(
@@ -98,7 +100,7 @@ export class AuthService {
     newPass: string,
     ogPassword: string,
   ): Promise<boolean> {
-    if (!newPass) {
+    if (!newPass || !ogPassword) {
       throw new BadRequestException(
         'Please provide your password to complete the login process',
       );

@@ -11,13 +11,13 @@ import bcrypt from 'bcrypt';
 @Injectable()
 export class UsersService {
   constructor(private readonly databaseService: DatabaseService) {}
-  async findAll(page: number, limit: number) {
+  async findAll(page: number, limit: number): Promise<User[]> {
     const skip = (page - 1) * limit;
     const users = await this.databaseService.user.findMany({
       skip,
       take: limit,
     });
-    return { status: 'success', data: { users } };
+    return users;
   }
 
   async createUser(newUser: CreateUserDto): Promise<User> {
@@ -27,14 +27,14 @@ export class UsersService {
     return await this.databaseService.user.create({ data: newUser });
   }
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<User> {
     const user = await this.databaseService.user.findUnique({
       where: { id },
     });
 
-    if (!user) return { status: 'fail', message: 'User not found' };
+    if (!user) throw new BadRequestException();
 
-    return { status: 'success', data: { user } };
+    return user;
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
@@ -81,10 +81,16 @@ export class UsersService {
     return { status: 'success', data: null };
   }
 
-  async findByEmail(email: string) {
+  async findByEmail(email: string): Promise<any | null> {
     if (!email) throw new BadRequestException('email is required');
-    return await this.databaseService.user.findFirst({
+    const user = await this.databaseService.user.findFirst({
       where: { email },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+      },
     });
+    return user;
   }
 }
