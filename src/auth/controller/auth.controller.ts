@@ -7,9 +7,9 @@ import {
   Post,
   Get,
 } from '@nestjs/common';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { CreateUserDto } from 'src/common/dto/create-user.dto';
 import { AuthService } from '../services/auth.service';
-import { LoginUserDto } from 'src/users/dto/update-user.dto';
+import { LoginUserDto } from 'src/common/dto/update-user.dto';
 import { JwtGuard } from '../guards/auth.guard';
 
 @Controller('auth')

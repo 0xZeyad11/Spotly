@@ -4,6 +4,8 @@ import { PrismaClient } from '@prisma/client';
 const gloabalOmitConfig = {
   user: {
     password: true,
+    password_reset_token: true,
+    password_token_expiry: true,
   },
 };
 @Injectable()

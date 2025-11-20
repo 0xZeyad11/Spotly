@@ -20,14 +20,15 @@ model User {
   email                 String    @unique
   password              String
   profile_image         String?
-  user_type             role
+  user_type             ROLE
   created_at            DateTime  @default(now())
   updated_at            DateTime  @updatedAt
   password_reset_token  String?
   password_token_expiry DateTime?
 }
 
-enum role {
+enum ROLE {
   REGULAR
   FAMOUS
+  ADMIN
 }

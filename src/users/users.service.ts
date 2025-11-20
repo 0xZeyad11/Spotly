@@ -1,19 +1,21 @@
+import { ConfigService } from '@nestjs/config';
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto } from '../common/dto/create-user.dto';
+import { UpdateUserDto } from '../common/dto/update-user.dto';
 import { DatabaseService } from 'src/database/database.service';
 import { User } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import { mailOptions } from 'src/common/types/mailOptions.type';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(private readonly prisma: DatabaseService) {}
   async findAll(page: number, limit: number): Promise<User[]> {
     const skip = (page - 1) * limit;
-    const users = await this.databaseService.user.findMany({
+    const users = await this.prisma.user.findMany({
       skip,
       take: limit,
     });
@@ -24,11 +26,11 @@ export class UsersService {
     if (!newUser) {
       throw new BadRequestException('user not found!');
     }
-    return await this.databaseService.user.create({ data: newUser });
+    return await this.prisma.user.create({ data: newUser });
   }
 
   async findOne(id: number): Promise<User> {
-    const user = await this.databaseService.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id },
     });
 
@@ -37,45 +39,19 @@ export class UsersService {
     return user;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.databaseService.user.findUnique({
-      where: { id },
-    });
-    if (!user) return { status: 'fail', message: 'User not found' };
-    const data: any = { ...updateUserDto };
-
-    if (data.password) {
-      data.password = await bcrypt.hash(data.password, 10);
-    }
-    // Check for email uniqueness
-    if (data.email) {
-      const existingUser = await this.databaseService.user.findUnique({
-        where: { email: data.email },
-      });
-      if (existingUser && existingUser.id !== id) {
-        return {
-          status: 'fail',
-          message: 'Email is already in use by another account',
-        };
-      }
-    }
-    return {
-      status: 'success',
-      data: {
-        user: await this.databaseService.user.update({
-          where: { id },
-          data,
-        }),
-      },
-    };
+  // TODO use the updateuserdto in future
+  async update(id: number, newUserName: UpdateUserDto): Promise<User | null> {
+    const user = await this.findOne(id);
+    if (!user) throw new BadRequestException();
+    return await this.prisma.user.update({ where: { id }, data: newUserName });
   }
 
   async remove(id: number) {
-    const user = await this.databaseService.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id },
     });
     if (!user) return { status: 'fail', message: 'User not found' };
-    await this.databaseService.user.delete({
+    await this.prisma.user.delete({
       where: { id },
     });
     return { status: 'success', data: null };
@@ -83,7 +59,7 @@ export class UsersService {
 
   async findByEmail(email: string): Promise<any | null> {
     if (!email) throw new BadRequestException('email is required');
-    const user = await this.databaseService.user.findFirst({
+    const user = await this.prisma.user.findFirst({
       where: { email },
       select: {
         id: true,
@@ -93,4 +69,5 @@ export class UsersService {
     });
     return user;
   }
+
 }

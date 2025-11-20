@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { CreateUserDto } from './../../users/dto/create-user.dto';
+import { CreateUserDto } from '../../common/dto/create-user.dto';
+import crypto from 'crypto';
 import {
   Injectable,
   BadRequestException,
@@ -9,7 +10,8 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-
+import { mailOptions } from 'src/common/types/mailOptions.type';
+import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -54,20 +56,6 @@ export class AuthService {
     return await bcrypt.hash(password, this.salt ?? 10);
   }
 
-  async signToken(user: User): Promise<string> {
-    if (!user) {
-      throw new BadRequestException(
-        'There is no provided user for generating an access token',
-      );
-    }
-
-    return await this.jwtService.signAsync({
-      sub: user.id,
-      email: user.email,
-      user_name: user.user_name,
-    });
-  }
-
   async login(
     email: string,
     password: string,
@@ -106,5 +94,26 @@ export class AuthService {
       );
     }
     return await bcrypt.compare(newPass, ogPassword);
+  }
+
+  private async generateResetToken(userid: string): Promise<string> {
+    const passwordResetToken = await crypto.randomBytes(32).toString('hex');
+    const encryptedReset = await bcrypt.hash(passwordResetToken, 10);
+    //save encrypted reset token in the db
+    return passwordResetToken;
+  }
+
+  private async signToken(user: User): Promise<string> {
+    if (!user) {
+      throw new BadRequestException(
+        'There is no provided user for generating an access token',
+      );
+    }
+
+    return await this.jwtService.signAsync({
+      sub: user.id,
+      email: user.email,
+      user_name: user.user_name,
+    });
   }
 }

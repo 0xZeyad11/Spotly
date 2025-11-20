@@ -1,3 +1,4 @@
+import { JwtGuard } from './../auth/guards/auth.guard';
 import {
   Controller,
   Get,
@@ -8,16 +9,21 @@ import {
   Delete,
   ParseIntPipe,
   Query,
+  UseGuards,
   DefaultValuePipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from '@prisma/client';
+import { UpdateUserDto } from '../common/dto/update-user.dto';
+import { User, ROLE } from '@prisma/client';
+import { Roles } from 'src/decorators/roles.decorator';
+import { RoleGuard } from 'src/auth/guards/role.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @UseGuards(JwtGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @Get()
   async findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,

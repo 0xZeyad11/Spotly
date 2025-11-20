@@ -26,9 +26,3 @@ export class GlobalResponseInterceptor implements NestInterceptor {
     );
   }
 }
-// Global Response Structure
-
-/**
- * {
- * }
- */
